@@ -121,42 +121,51 @@ class CreateOrderForLastPass(object):
         },
         """
         logger.info("向上游请求的值：{}".format(json.dumps(self.request_data)))
-        if self.rules.get("request").get("type") == 'json':
-            result = request(
-                url=self.rules.get("request").get("url"),
-                method=self.rules.get("request").get("method"),
-                json = self.request_data,
-                headers={
-                    "Content-Type": 'application/json'
-                },
-                verify=False
-            )
-        elif self.rules.get("request").get("type") == 'body':
-            result = request(
-                url = self.rules.get("request").get("url"),
-                method = self.rules.get("request").get("method"),
-                data=self.request_data,
-                verify=False
-            )
-        elif self.rules.get("request").get("type") == 'params':
-            if self.passid == 76:
-                url = self.rules.get("request").get("url") + "?params={}".format(json.dumps(self.request_data))
-                # data['params'] = self.request_data
-                print(url)
+
+        try:
+            if self.rules.get("request").get("type") == 'json':
                 result = request(
-                    url = url,
-                    method = self.rules.get("request").get("method"),
-                    verify=False
+                    url=self.rules.get("request").get("url"),
+                    method=self.rules.get("request").get("method"),
+                    json = self.request_data,
+                    headers={
+                        "Content-Type": 'application/json'
+                    },
+                    verify=False,
+                    timeout=5
                 )
-            else:
+            elif self.rules.get("request").get("type") == 'body':
                 result = request(
                     url = self.rules.get("request").get("url"),
                     method = self.rules.get("request").get("method"),
-                    params = self.request_data,
-                    verify=False
+                    data=self.request_data,
+                    verify=False,
+                    timeout=5
                 )
-        else:
-            raise PubErrorCustom("请求参数错误!")
+            elif self.rules.get("request").get("type") == 'params':
+                if self.passid == 76:
+                    url = self.rules.get("request").get("url") + "?params={}".format(json.dumps(self.request_data))
+                    # data['params'] = self.request_data
+                    print(url)
+                    result = request(
+                        url = url,
+                        method = self.rules.get("request").get("method"),
+                        verify=False,
+                        timeout=5
+                    )
+                else:
+                    result = request(
+                        url = self.rules.get("request").get("url"),
+                        method = self.rules.get("request").get("method"),
+                        params = self.request_data,
+                        verify=False,
+                        timeout=5
+                    )
+            else:
+                raise PubErrorCustom("请求参数错误!")
+        except Exception as e:
+            logger.error(str(e))
+            raise PubErrorCustom("上游系统很慢，超时了，麻烦别找我，发给上游，谢谢!!!!!!!(慢到什么程度 5秒没有反应，5秒是什么概念，基本上系统已经瘫痪了！！！！！)")
 
         try :
             self.response = json.loads(result.content.decode('utf-8'))

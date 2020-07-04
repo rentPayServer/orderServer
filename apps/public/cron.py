@@ -26,12 +26,12 @@ def filterOrder():
 
     print("开始执行保留1个月订单操作!")
     with transaction.atomic():
-        obj = Order.objects.filter(createtime__lt = UtilTime().today.replace(months=-1).timestamp)
+        obj = Order.objects.filter(createtime__lt = UtilTime().today.replace(days=-15).timestamp)
         if obj.exists():
             for item in obj:
                 item.delete()
 
-        obj = BalList.objects.filter(createtime__lt = UtilTime().today.replace(months=-1).timestamp)
+        obj = BalList.objects.filter(createtime__lt = UtilTime().today.replace(days=-15).timestamp)
         if obj.exists():
             for item in obj:
                 item.delete()
